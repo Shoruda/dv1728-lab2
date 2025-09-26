@@ -96,6 +96,11 @@ int main(int argc, char *argv[]){
             continue; // parent continues
         }
 
+        struct timeval time;
+        time.tv_sec = 5;
+        time.tv_usec = 0;
+        setsockopt(newsock, SOL_SOCKET, SO_RCVTIMEO, &time, sizeof(time));
+
         pid_t pid = fork();
         if (pid < 0) {
             fprintf(stderr, "fork error: %s\n", strerror(errno));
