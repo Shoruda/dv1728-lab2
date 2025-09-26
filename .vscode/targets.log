@@ -6,7 +6,7 @@ make all -f /home/axel/dv1728-lab2/Makefile --print-data-base --no-builtin-varia
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Sep 25 12:41:17 2025
+# Make data base, printed on Fri Sep 26 15:23:33 2025
 
 # Variables
 
@@ -15,11 +15,11 @@ GDK_BACKEND = x11
 # environment
 LC_ALL = C
 # environment
+NO_AT_BRIDGE = 1
+# environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
 SSH_AGENT_LAUNCHER = gnome-keyring
-# environment
-GJS_DEBUG_OUTPUT = stderr
 # environment
 LC_NAME = sv_SE.UTF-8
 # environment
@@ -28,8 +28,6 @@ LC_NUMERIC = sv_SE.UTF-8
 VSCODE_CRASH_REPORTER_PROCESS_TYPE = extensionHost
 # environment
 VSCODE_CWD = /home/axel
-# environment
-WINDOWPATH = 2
 # environment
 LC_ADDRESS = sv_SE.UTF-8
 # default
@@ -47,7 +45,7 @@ PWD = /home/axel/dv1728-lab2
 # automatic
 %D = $(patsubst %/,%,$(dir $%))
 # environment
-XDG_DATA_DIRS = /usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+XDG_DATA_DIRS = /usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
 # automatic
 ^D = $(patsubst %/,%,$(dir $^))
 # automatic
@@ -57,21 +55,21 @@ VSCODE_CODE_CACHE_PATH = /home/axel/.config/Code/CachedData/6c3e3dba23e8fadc360a
 # environment
 LANG = C
 # environment
-XAUTHORITY = /run/user/1000/gdm/Xauthority
+XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.94PED3
 # default
 .LOADED := 
 # default
 .INCLUDE_DIRS = /usr/local/include /usr/include /usr/include
 # makefile
 MAKEFLAGS = pqrR
+# environment
+DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=18efd86c3af4877c1d1a031668d697db
 # makefile
 CURDIR := /home/axel/dv1728-lab2
 # environment
 APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
 # environment
 LESSOPEN = | /usr/bin/lesspipe %s
-# environment
-VSCODE_L10N_BUNDLE_LOCATION = 
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
@@ -80,6 +78,8 @@ MFLAGS = -pqrR
 SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
 # default
 .SHELLFLAGS := -c
+# environment
+WAYLAND_DISPLAY = wayland-0
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # automatic
@@ -91,19 +91,19 @@ MAKEFILE_LIST := /home/axel/dv1728-lab2/Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 8492
+VSCODE_PID = 9303
 # environment
-XDG_SESSION_TYPE = x11
+XDG_SESSION_TYPE = wayland
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
 # environment
-SESSION_MANAGER = local/axel-AN515:@/tmp/.ICE-unix/2050,unix/axel-AN515:/tmp/.ICE-unix/2050
+SESSION_MANAGER = local/axel-AN515:@/tmp/.ICE-unix/1734,unix/axel-AN515:/tmp/.ICE-unix/1734
 # automatic
 *F = $(notdir $*)
 # environment
 CHROME_DESKTOP = code-url-handler.desktop
 # environment
-DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=18efd86c3af4877c1d1a031668d697db
 # automatic
 <D = $(patsubst %/,%,$(dir $<))
 # environment
@@ -119,11 +119,11 @@ MAKECMDGOALS := all
 # environment
 XMODIFIERS = @im=ibus
 # environment
-GJS_DEBUG_TOPICS = JS ERROR;JS LOG
-# environment
 SHLVL = 0
 # environment
 MAKELEVEL := 0
+# environment
+IM_CONFIG_CHECK_ENV = 1
 # default
 MAKE = $(MAKE_COMMAND)
 # environment
@@ -137,17 +137,17 @@ LC_MONETARY = sv_SE.UTF-8
 # environment
 LC_TIME = sv_SE.UTF-8
 # environment
-INVOCATION_ID = e83b139c587c42698564262e48297ad7
+INVOCATION_ID = 287252f4a13f4d35a76439e5add20470
 # environment
 USERNAME = axel
+# environment
+GNOME_SETUP_DISPLAY = :1
 # environment
 LC_TELEPHONE = sv_SE.UTF-8
 # environment
 LESSCLOSE = /usr/bin/lesspipe %s %s
 # automatic
 ?F = $(notdir $?)
-# environment
-GTK_IM_MODULE = ibus
 # environment
 XDG_CURRENT_DESKTOP = Unity
 # automatic
@@ -165,9 +165,9 @@ GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # makefile
 .DEFAULT_GOAL := all
 # environment
-SYSTEMD_EXEC_PID = 2073
+SYSTEMD_EXEC_PID = 1734
 # environment
-DISPLAY = :1
+DISPLAY = :0
 # environment
 USER = axel
 # environment
@@ -175,21 +175,21 @@ GTK_MODULES = gail:atk-bridge
 # default
 MAKE_VERSION := 4.3
 # environment
-MANAGERPID = 1699
+MANAGERPID = 1569
+# environment
+DBUS_STARTER_BUS_TYPE = session
 # environment
 LC_MEASUREMENT = sv_SE.UTF-8
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 8492
+GIO_LAUNCHED_DESKTOP_FILE_PID = 15769
 # environment
-_ = /usr/share/code/code
+_ = /usr/bin/gnome-session
 # environment
 LC_PAPER = sv_SE.UTF-8
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
-GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
-# environment
-JOURNAL_STREAM = 8:31468
+JOURNAL_STREAM = 8:11838
 # environment
 XDG_SESSION_CLASS = user
 # environment
@@ -202,6 +202,8 @@ QT_IM_MODULE = ibus
 ELECTRON_RUN_AS_NODE = 1
 # environment
 VSCODE_IPC_HOOK = /run/user/1000/vscode-9399bfde-1.81-main.sock
+# environment
+IM_CONFIG_PHASE = 1
 # default
 .RECIPEPREFIX := 
 # automatic
@@ -221,7 +223,7 @@ LC_IDENTIFICATION = sv_SE.UTF-8
 # makefile (from '/home/axel/dv1728-lab2/Makefile', line 1)
 CC_FLAGS = -Wall -I.
 # variable set hash-table stats:
-# Load=105/1024=10%, Rehash=0, Collisions=4/138=3%
+# Load=106/1024=10%, Rehash=0, Collisions=4/139=3%
 
 # Pattern-specific Variable Values
 
@@ -275,11 +277,29 @@ clean:
 
 libcalc: calcLib.o
 #  Implicit rule search has not been done.
+#  Implicit/static pattern stem: ''
 #  File does not exist.
 #  File has been updated.
+ 
 #  Needs to be updated (-q is set).
+# automatic
+# @ := libcalc
+# automatic
+# * := 
+# automatic
+# < := calcLib.o
+# automatic
+# + := calcLib.o
+# automatic
+# % := 
+# automatic
+# ^ := calcLib.o
+# automatic
+# ? := calcLib.o
+# automatic
+# | := 
 # variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/3=0%
+# Load=8/32=25%, Rehash=0, Collisions=1/11=9%
 #  recipe to execute (from '/home/axel/dv1728-lab2/Makefile', line 31):
 	ar -rc libcalc.a -o calcLib.o
 
@@ -292,29 +312,9 @@ calcLib.c:
 
 calcLib.o: calcLib.c calcLib.h
 #  Implicit rule search has not been done.
-#  Implicit/static pattern stem: ''
-#  File does not exist.
+#  Last modified 2025-09-25 14:19:35.120791371
 #  File has been updated.
-#  Needs to be updated (-q is set).
-# automatic
-# @ := calcLib.o
-# automatic
-# * := 
-# automatic
-# < := calcLib.c
-# automatic
-# + := calcLib.c calcLib.h
-# automatic
-# % := 
-# automatic
-# ^ := calcLib.c calcLib.h
-# automatic
-# ? := calcLib.c calcLib.h
-# automatic
-# | := 
-# variable set hash-table stats:
- 
-# Load=8/32=25%, Rehash=0, Collisions=1/11=9%
+#  Successfully updated.
 #  recipe to execute (from '/home/axel/dv1728-lab2/Makefile', line 28):
 	gcc -Wall -fPIC -c calcLib.c
 
@@ -399,6 +399,6 @@ tcpservermain.o: tcpservermain.cpp
 # strcache performance: lookups = 46 / hit rate = 56%
 # hash-table stats:
 # Load=20/8192=0%, Rehash=0, Collisions=0/46=0%
-# Finished Make data base on Thu Sep 25 12:41:17 2025
+# Finished Make data base on Fri Sep 26 15:23:33 2025
 
  
