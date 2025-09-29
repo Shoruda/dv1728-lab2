@@ -6,7 +6,7 @@ make all -f /home/axel/dv1728-lab2/Makefile --print-data-base --no-builtin-varia
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Fri Sep 26 15:23:33 2025
+# Make data base, printed on Mon Sep 29 14:25:18 2025
 
 # Variables
 
@@ -15,11 +15,11 @@ GDK_BACKEND = x11
 # environment
 LC_ALL = C
 # environment
-NO_AT_BRIDGE = 1
-# environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
 SSH_AGENT_LAUNCHER = gnome-keyring
+# environment
+GJS_DEBUG_OUTPUT = stderr
 # environment
 LC_NAME = sv_SE.UTF-8
 # environment
@@ -55,15 +55,13 @@ VSCODE_CODE_CACHE_PATH = /home/axel/.config/Code/CachedData/6c3e3dba23e8fadc360a
 # environment
 LANG = C
 # environment
-XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.94PED3
+XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.3DKRD3
 # default
 .LOADED := 
 # default
 .INCLUDE_DIRS = /usr/local/include /usr/include /usr/include
 # makefile
 MAKEFLAGS = pqrR
-# environment
-DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=18efd86c3af4877c1d1a031668d697db
 # makefile
 CURDIR := /home/axel/dv1728-lab2
 # environment
@@ -91,19 +89,19 @@ MAKEFILE_LIST := /home/axel/dv1728-lab2/Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 9303
+VSCODE_PID = 2732
 # environment
 XDG_SESSION_TYPE = wayland
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
 # environment
-SESSION_MANAGER = local/axel-AN515:@/tmp/.ICE-unix/1734,unix/axel-AN515:/tmp/.ICE-unix/1734
+SESSION_MANAGER = local/axel-AN515:@/tmp/.ICE-unix/1721,unix/axel-AN515:/tmp/.ICE-unix/1721
 # automatic
 *F = $(notdir $*)
 # environment
 CHROME_DESKTOP = code-url-handler.desktop
 # environment
-DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=18efd86c3af4877c1d1a031668d697db
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
 # automatic
 <D = $(patsubst %/,%,$(dir $<))
 # environment
@@ -118,6 +116,8 @@ SHELL = /bin/sh
 MAKECMDGOALS := all
 # environment
 XMODIFIERS = @im=ibus
+# environment
+GJS_DEBUG_TOPICS = JS ERROR;JS LOG
 # environment
 SHLVL = 0
 # environment
@@ -137,7 +137,7 @@ LC_MONETARY = sv_SE.UTF-8
 # environment
 LC_TIME = sv_SE.UTF-8
 # environment
-INVOCATION_ID = 287252f4a13f4d35a76439e5add20470
+INVOCATION_ID = c075d1f1b3ea4d64a496db06eecd6610
 # environment
 USERNAME = axel
 # environment
@@ -165,7 +165,7 @@ GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # makefile
 .DEFAULT_GOAL := all
 # environment
-SYSTEMD_EXEC_PID = 1734
+SYSTEMD_EXEC_PID = 1748
 # environment
 DISPLAY = :0
 # environment
@@ -175,21 +175,19 @@ GTK_MODULES = gail:atk-bridge
 # default
 MAKE_VERSION := 4.3
 # environment
-MANAGERPID = 1569
-# environment
-DBUS_STARTER_BUS_TYPE = session
+MANAGERPID = 1535
 # environment
 LC_MEASUREMENT = sv_SE.UTF-8
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 15769
+GIO_LAUNCHED_DESKTOP_FILE_PID = 2732
 # environment
-_ = /usr/bin/gnome-session
+_ = /usr/share/code/code
 # environment
 LC_PAPER = sv_SE.UTF-8
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
-JOURNAL_STREAM = 8:11838
+JOURNAL_STREAM = 8:13742
 # environment
 XDG_SESSION_CLASS = user
 # environment
@@ -223,7 +221,7 @@ LC_IDENTIFICATION = sv_SE.UTF-8
 # makefile (from '/home/axel/dv1728-lab2/Makefile', line 1)
 CC_FLAGS = -Wall -I.
 # variable set hash-table stats:
-# Load=106/1024=10%, Rehash=0, Collisions=4/139=3%
+# Load=105/1024=10%, Rehash=0, Collisions=3/138=2%
 
 # Pattern-specific Variable Values
 
@@ -280,7 +278,6 @@ libcalc: calcLib.o
 #  Implicit/static pattern stem: ''
 #  File does not exist.
 #  File has been updated.
- 
 #  Needs to be updated (-q is set).
 # automatic
 # @ := libcalc
@@ -312,7 +309,7 @@ calcLib.c:
 
 calcLib.o: calcLib.c calcLib.h
 #  Implicit rule search has not been done.
-#  Last modified 2025-09-25 14:19:35.120791371
+#  Last modified 2025-09-26 15:55:50.251738723
 #  File has been updated.
 #  Successfully updated.
 #  recipe to execute (from '/home/axel/dv1728-lab2/Makefile', line 28):
@@ -399,6 +396,6 @@ tcpservermain.o: tcpservermain.cpp
 # strcache performance: lookups = 46 / hit rate = 56%
 # hash-table stats:
 # Load=20/8192=0%, Rehash=0, Collisions=0/46=0%
-# Finished Make data base on Fri Sep 26 15:23:33 2025
+# Finished Make data base on Mon Sep 29 14:25:18 2025
 
  

@@ -12,6 +12,7 @@
 #include <errno.h>
 
 #include "calcLib.h"
+#include "protocol.h"
 // Enable if you want debugging to be printed, see examble below.
 // Alternative, pass CFLAGS=-DDEBUG to make, make CFLAGS=-DDEBUG
 #define DEBUG
@@ -20,8 +21,126 @@
 
 using namespace std;
 
+void handle_text_client(int sock)
+{
+    char newbuffer[256];
+    initCalcLib();
+    char* operation = randomType();
+    int value1 = randomInt();
+    int value2 = randomInt();
 
-// ... all includes and setup as in your original code ...
+    int correct_result;
+    if (strcmp(operation, "add") == 0) 
+        correct_result = value1 + value2;
+    else if (strcmp(operation, "sub") == 0) 
+        correct_result = value1 - value2;
+    else if (strcmp(operation, "mul") == 0) 
+        correct_result = value1 * value2;
+    else if (strcmp(operation, "div") == 0) 
+        correct_result = value1 / value2;
+    else 
+        correct_result = 0;
+
+    snprintf(newbuffer, sizeof(newbuffer), "%s %d %d\n", operation, value1, value2);
+    send(sock, newbuffer, strlen(newbuffer), 0);
+    printf("Sent assignment: %s %d %d\n", operation, value1, value2);
+
+    int n = recv(sock, newbuffer, sizeof(newbuffer) - 1, 0);
+    if (n < 0) {
+        fprintf(stderr, "recv error: %s\n", strerror(errno));
+        close(sock);
+        exit(1);
+    }
+    newbuffer[n] = '\0';
+    printf("answer: %s\n", newbuffer);
+
+    int client_result = atoi(newbuffer);
+    if (client_result == correct_result) {
+        const char *okmsg = "OK\n";
+        send(sock, okmsg, strlen(okmsg), 0);
+        printf("Client was correct! (%d)\n", client_result);
+    } else {
+        const char *errmsg = "ERROR\n";
+        send(sock, errmsg, strlen(errmsg), 0);
+        printf("Client was wrong! Expected %d but got %d\n", correct_result, client_result);
+    }
+
+    close(sock);
+    exit(0);
+}
+
+void handle_binary_client(int sock)
+{
+    initCalcLib();
+    char* operation = randomType();
+    int value1 = randomInt();
+    int value2 = randomInt();
+
+    calcProtocol msg;
+    memset(&msg, 0, sizeof(msg));
+    msg.type = htons(1);
+    msg.major_version = htons(1);
+    msg.minor_version = htons(1);
+    msg.id = htonl(rand());
+    if (strcmp(operation,"add")==0) 
+        msg.arith = htonl(1);
+    else if (strcmp(operation,"sub")==0) 
+        msg.arith = htonl(2);
+    else if (strcmp(operation,"mul")==0) 
+        msg.arith = htonl(3);
+    else if (strcmp(operation,"div")==0) 
+        msg.arith = htonl(4);
+    msg.inValue1 = htonl(value1);
+    msg.inValue2 = htonl(value2);
+
+    printf("Sent assignment (BINARY): %s %d %d\n", operation, value1, value2);
+
+    send(sock, &msg, sizeof(msg), 0);
+
+    calcProtocol ans;
+    int n = recv(sock, &ans, sizeof(ans), 0);
+    if (n < sizeof(ans)) {
+        fprintf(stderr, "binary recv failed\n");
+        close(sock);
+        exit(1);
+    }
+
+    int client_result = ntohl(ans.inResult);
+    printf("Received answer (BINARY): %d\n", client_result);
+
+    int correct_result;
+    if (strcmp(operation, "add") == 0) 
+        correct_result = value1 + value2;
+    else if (strcmp(operation, "sub") == 0) 
+        correct_result = value1 - value2;
+    else if (strcmp(operation, "mul") == 0) 
+        correct_result = value1 * value2;
+    else if (strcmp(operation, "div") == 0) {
+
+        correct_result = value1 / value2;
+    } else 
+        correct_result = 0;
+
+    printf("Expected result: %d\n", correct_result);
+
+    calcMessage response;
+    memset(&response, 0, sizeof(response));
+    response.type = htons(2);
+    response.major_version = htons(1);
+    response.minor_version = htons(1);
+    response.message = htonl(client_result == correct_result ? 1 : 2);
+
+    send(sock, &response, sizeof(response), 0);
+
+    if (client_result == correct_result) {
+        printf("Client was correct! (%d)\n", client_result);
+    } else {
+        printf("Client was wrong! Expected %d but got %d\n", correct_result, client_result);
+    }
+
+    close(sock);
+    exit(0);
+}
 
 int main(int argc, char *argv[]){
     if (argc < 2) {
@@ -109,64 +228,34 @@ int main(int argc, char *argv[]){
         }
 
         if (pid == 0) {
-            // Child process
-            close(sockfd); // child doesn't need listening socket
+            close(sockfd);
 
             printf("Client connected!\n");
 
-            const char *msg = "TEXT TCP 1.1\n";
+            const char *msg = "TEXT TCP 1.1\nBINARY TCP 1.1\n";
             send(newsock, msg, strlen(msg), 0);
 
             char buffer[256];
             int n = recv(newsock, buffer, sizeof(buffer) - 1, 0);
-            if (n < 0) {
-                fprintf(stderr, "recv error: %s\n", strerror(errno));
-                close(newsock);
-                exit(1);
-            }
-            buffer[n] = '\0';
-            printf("Got message: %s\n", buffer);
-
-            initCalcLib();
-            char* operation = randomType();
-            int value1 = randomInt();
-            int value2 = randomInt();
-
-            int correct_result;
-            if (strcmp(operation, "add") == 0) correct_result = value1 + value2;
-            else if (strcmp(operation, "sub") == 0) correct_result = value1 - value2;
-            else if (strcmp(operation, "mul") == 0) correct_result = value1 * value2;
-            else if (strcmp(operation, "div") == 0) correct_result = value1 / value2;
-            else correct_result = 0;
-
-            snprintf(buffer, sizeof(buffer), "%s %d %d\n", operation, value1, value2);
-            send(newsock, buffer, strlen(buffer), 0);
-            printf("Sent assignment: %s %d %d\n", operation, value1, value2);
-
-            n = recv(newsock, buffer, sizeof(buffer) - 1, 0);
-            if (n < 0) {
-                fprintf(stderr, "recv error: %s\n", strerror(errno));
-                close(newsock);
-                exit(1);
-            }
-            buffer[n] = '\0';
-            printf("answer: %s\n", buffer);
-
-            int client_result = atoi(buffer);
-            if (client_result == correct_result) {
-                const char *okmsg = "OK\n";
-                send(newsock, okmsg, strlen(okmsg), 0);
-                printf("Client was correct! (%d)\n", client_result);
-            } else {
-                const char *errmsg = "ERROR\n";
-                send(newsock, errmsg, strlen(errmsg), 0);
-                printf("Client was wrong! Expected %d but got %d\n", correct_result, client_result);
-            }
-
+            if (n <= 0) {
+            const char *errmsg = "ERROR: MESSAGE LOST (TIMEOUT)\n";
+            send(newsock, errmsg, strlen(errmsg), 0);
             close(newsock);
-            exit(0);
+            exit(1);
+            }
+            buffer[n] = '\0';
+
+            if (strncmp(buffer, "TEXT", 4) == 0) {
+                handle_text_client(newsock);
+            } else if (strncmp(buffer, "BINARY", 6) == 0) {
+                handle_binary_client(newsock);
+            } else {
+                const char *errmsg = "ERROR: Invalid protocol\n";
+                send(newsock, errmsg, strlen(errmsg), 0);
+                close(newsock);
+                return 0;
+            }
         } else {
-            // Parent process
             close(newsock);
         }
     }
