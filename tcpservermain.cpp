@@ -165,6 +165,8 @@ int main(int argc, char *argv[]){
 
     printf("TCP server on: %s:%s\n", hoststring, portstring);
 
+    //DO MAGIC :3
+
     struct addrinfo hints, *res, *p;
     int status;
     memset(&hints, 0, sizeof hints);
@@ -212,7 +214,7 @@ int main(int argc, char *argv[]){
         int newsock = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
         if (newsock == -1) {
             fprintf(stderr, "accept error: %s\n", strerror(errno));
-            continue; // parent continues
+            continue;
         }
 
         struct timeval time;

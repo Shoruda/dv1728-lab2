@@ -6,7 +6,7 @@ make all -f /home/axel/dv1728-lab2/Makefile --print-data-base --no-builtin-varia
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Mon Sep 29 14:25:18 2025
+# Make data base, printed on Tue Sep 30 10:53:56 2025
 
 # Variables
 
@@ -14,6 +14,8 @@ make all -f /home/axel/dv1728-lab2/Makefile --print-data-base --no-builtin-varia
 GDK_BACKEND = x11
 # environment
 LC_ALL = C
+# environment
+NO_AT_BRIDGE = 1
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
@@ -55,13 +57,15 @@ VSCODE_CODE_CACHE_PATH = /home/axel/.config/Code/CachedData/6c3e3dba23e8fadc360a
 # environment
 LANG = C
 # environment
-XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.3DKRD3
+XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.Q9U8C3
 # default
 .LOADED := 
 # default
 .INCLUDE_DIRS = /usr/local/include /usr/include /usr/include
 # makefile
 MAKEFLAGS = pqrR
+# environment
+DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=f948c4ca329da5a2d1fef7d068db9a34
 # makefile
 CURDIR := /home/axel/dv1728-lab2
 # environment
@@ -89,19 +93,19 @@ MAKEFILE_LIST := /home/axel/dv1728-lab2/Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 2732
+VSCODE_PID = 4649
 # environment
 XDG_SESSION_TYPE = wayland
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
 # environment
-SESSION_MANAGER = local/axel-AN515:@/tmp/.ICE-unix/1721,unix/axel-AN515:/tmp/.ICE-unix/1721
+SESSION_MANAGER = local/axel-AN515:@/tmp/.ICE-unix/1766,unix/axel-AN515:/tmp/.ICE-unix/1766
 # automatic
 *F = $(notdir $*)
 # environment
 CHROME_DESKTOP = code-url-handler.desktop
 # environment
-DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=f948c4ca329da5a2d1fef7d068db9a34
 # automatic
 <D = $(patsubst %/,%,$(dir $<))
 # environment
@@ -137,7 +141,7 @@ LC_MONETARY = sv_SE.UTF-8
 # environment
 LC_TIME = sv_SE.UTF-8
 # environment
-INVOCATION_ID = c075d1f1b3ea4d64a496db06eecd6610
+INVOCATION_ID = 539bc6c813e44baabf801a94e8d33a55
 # environment
 USERNAME = axel
 # environment
@@ -165,7 +169,7 @@ GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # makefile
 .DEFAULT_GOAL := all
 # environment
-SYSTEMD_EXEC_PID = 1748
+SYSTEMD_EXEC_PID = 1766
 # environment
 DISPLAY = :0
 # environment
@@ -175,19 +179,21 @@ GTK_MODULES = gail:atk-bridge
 # default
 MAKE_VERSION := 4.3
 # environment
-MANAGERPID = 1535
+MANAGERPID = 1580
+# environment
+DBUS_STARTER_BUS_TYPE = session
 # environment
 LC_MEASUREMENT = sv_SE.UTF-8
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 2732
+GIO_LAUNCHED_DESKTOP_FILE_PID = 5357
 # environment
-_ = /usr/share/code/code
+_ = /usr/bin/gnome-session
 # environment
 LC_PAPER = sv_SE.UTF-8
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
-JOURNAL_STREAM = 8:13742
+JOURNAL_STREAM = 8:10125
 # environment
 XDG_SESSION_CLASS = user
 # environment
@@ -221,7 +227,7 @@ LC_IDENTIFICATION = sv_SE.UTF-8
 # makefile (from '/home/axel/dv1728-lab2/Makefile', line 1)
 CC_FLAGS = -Wall -I.
 # variable set hash-table stats:
-# Load=105/1024=10%, Rehash=0, Collisions=3/138=2%
+# Load=108/1024=11%, Rehash=0, Collisions=4/141=3%
 
 # Pattern-specific Variable Values
 
@@ -291,6 +297,7 @@ libcalc: calcLib.o
 # % := 
 # automatic
 # ^ := calcLib.o
+ 
 # automatic
 # ? := calcLib.o
 # automatic
@@ -396,6 +403,6 @@ tcpservermain.o: tcpservermain.cpp
 # strcache performance: lookups = 46 / hit rate = 56%
 # hash-table stats:
 # Load=20/8192=0%, Rehash=0, Collisions=0/46=0%
-# Finished Make data base on Mon Sep 29 14:25:18 2025
+# Finished Make data base on Tue Sep 30 10:53:56 2025
 
  
