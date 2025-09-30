@@ -213,7 +213,7 @@ int main(int argc, char *argv[]){
     }
 
     if (activity == 0) {
-      printf("No activity, waiting again...\n");
+      printf("No activity, waiting\n");
       continue;
     }
 
@@ -228,22 +228,31 @@ int main(int argc, char *argv[]){
       printf("Received %d bytes: %s\n", n, buffer);
       // binary
       if (n == sizeof(calcMessage)) {
-        calcProtocol pkt;
-        memcpy(&pkt, buffer, sizeof(pkt));
+        calcMessage msg;
+        memcpy(&msg, buffer, sizeof(msg));
 
-        pkt.type          = ntohs(pkt.type);
-        pkt.major_version = ntohs(pkt.major_version);
-        pkt.minor_version = ntohs(pkt.minor_version);
-        pkt.id            = ntohl(pkt.id);
-        pkt.arith         = ntohl(pkt.arith);
-        pkt.inValue1      = ntohl(pkt.inValue1);
-        pkt.inValue2      = ntohl(pkt.inValue2);
-        pkt.inResult      = ntohl(pkt.inResult);
+        msg.type          = ntohs(msg.type);
+        msg.message       = ntohl(msg.message);
+        msg.protocol      = ntohs(msg.protocol);
+        msg.major_version = ntohs(msg.major_version);
+        msg.minor_version = ntohs(msg.minor_version);
+ 
+      if (msg.type != 22) {
+        fprintf(stderr, "Unexpected message type: %d\n", msg.type);
+        continue;
+      }
 
-        printf("Binary packet received: type=%d id=%d arith=%d v1=%d v2=%d res=%d\n",
-          pkt.type, pkt.id, pkt.arith, pkt.inValue1, pkt.inValue2, pkt.inResult);
+      if (msg.protocol != 17) {
+        fprintf(stderr, "Invalid protocol: %d\n", msg.protocol);
+        continue;
+      }
 
-        handle_binary_client(sockfd, &client_addr, addrlen);
+      if (msg.major_version != 1 || msg.minor_version != 1) {
+        fprintf(stderr, "Unexpected protocol version: %d.%d\n", msg.major_version, msg.minor_version);
+        continue;
+      }
+      handle_binary_client(sockfd, &client_addr, addrlen);
+
       }
       // text
       else {
