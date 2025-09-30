@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <time.h>
+#include <map>
+#include <ctime>
 
 // Included to get the support library
 #include <calcLib.h>
@@ -21,147 +23,207 @@
 
 using namespace std;
 
-void handle_text_client(int sockfd, struct sockaddr_storage *client_addr, socklen_t addrlen) {
-    char buffer[256];
-
-    initCalcLib();
-    char *operation = randomType();
-    int value1 = randomInt();
-    int value2 = randomInt();
-
+struct ClientState {
+    struct sockaddr_storage addr;
+    socklen_t addrlen;
+    time_t sent_time;
     int correct_result;
+    char operation[10];
+    int value1;
+    int value2;
+    uint32_t id;
+    bool is_binary;
+};
 
-    if (strcmp(operation, "add") == 0) 
-      correct_result = value1 + value2;
-    else if (strcmp(operation, "sub") == 0) 
-      correct_result = value1 - value2;
-    else if (strcmp(operation, "mul") == 0) 
-      correct_result = value1 * value2;
-    else if (strcmp(operation, "div") == 0) 
-      correct_result = value1 / value2;
-    else 
-      correct_result = 0;
+std::map<uint32_t, ClientState> pending_clients;
 
-    snprintf(buffer, sizeof(buffer), "%s %d %d\n", operation, value1, value2);
-    sendto(sockfd, buffer, strlen(buffer), 0, (struct sockaddr *)client_addr, addrlen);
-    printf("Sent assignment (TEXT): %s %d %d\n", operation, value1, value2);
+uint32_t generate_client_key(struct sockaddr_storage *addr) {
+  return (uint32_t)time(NULL) + rand();
+}
 
-    fd_set readfds;
-    FD_ZERO(&readfds);
-    FD_SET(sockfd, &readfds);
-    
-    struct timeval timeout;
-    timeout.tv_sec = 2;  // 2 second timeout for client response
-    timeout.tv_usec = 0;
+void send_text_assignment(int sockfd, struct sockaddr_storage *client_addr, socklen_t addrlen) {
+  char buffer[256];
 
-    int activity = select(sockfd + 1, &readfds, NULL, NULL, &timeout);
-    if (activity <= 0) {
-      fprintf(stderr, "Client did not respond in time (TEXT)\n");
-      return;
+  initCalcLib();
+  char *operation = randomType();
+  int value1 = randomInt();
+  int value2 = randomInt();
+
+  int correct_result;
+
+  if (strcmp(operation, "add") == 0) 
+    correct_result = value1 + value2;
+  else if (strcmp(operation, "sub") == 0) 
+    correct_result = value1 - value2;
+  else if (strcmp(operation, "mul") == 0) 
+    correct_result = value1 * value2;
+  else if (strcmp(operation, "div") == 0) 
+    correct_result = value1 / value2;
+  else 
+    correct_result = 0;
+
+  snprintf(buffer, sizeof(buffer), "%s %d %d\n", operation, value1, value2);
+  sendto(sockfd, buffer, strlen(buffer), 0, (struct sockaddr *)client_addr, addrlen);
+  printf("Sent assignment (TEXT): %s %d %d\n", operation, value1, value2);
+
+  ClientState state;
+  memcpy(&state.addr, client_addr, sizeof(*client_addr));
+  state.addrlen = addrlen;
+  state.sent_time = time(NULL);
+  state.correct_result = correct_result;
+  strncpy(state.operation, operation, sizeof(state.operation));
+  state.value1 = value1;
+  state.value2 = value2;
+  state.is_binary = false;
+  
+  uint32_t key = generate_client_key(client_addr);
+  pending_clients[key] = state;
+}
+
+void handle_text_answer(int sockfd, char *buffer, int n, struct sockaddr_storage *from_addr, socklen_t addrlen)
+{
+  buffer[n] = '\0';
+  printf("text answer recieved: %s\n", buffer);
+
+  if (pending_clients.empty())
+  {
+    fprintf(stderr, "got answer but no pending clients\n");
+    return;
+  }
+
+  ClientState *state = NULL;
+  uint32_t found_key = 0;
+  for (auto &pair: pending_clients) 
+  {
+    if(!pair.second.is_binary)
+    {
+      state = &pair.second;
+      found_key = pair.first;
+      break;
     }
+  }
 
-    int n = recvfrom(sockfd, buffer, sizeof(buffer)-1, 0, (struct sockaddr *)client_addr, &addrlen);
-    if (n < 0) {
-      perror("recvfrom");
-      return;
-    }
-    buffer[n] = '\0';
-    printf("Answer: %s\n", buffer);
+  if(!state)
+  {
+    fprintf(stderr, "No pending text clients fonud\n");
+    return;
+  }
 
-    int client_result = atoi(buffer);
-    if (client_result == correct_result) {
-      const char *okmsg = "OK\n";
-      sendto(sockfd, okmsg, strlen(okmsg), 0, (struct sockaddr *)client_addr, addrlen);
-      printf("Client was correct! (%d)\n", client_result);
+  int client_result = atoi(buffer);
+
+  if (client_result == state->correct_result)
+  {
+    const char *okmsg = "OK\n";
+    sendto(sockfd, okmsg, strlen(okmsg), 0, (struct sockaddr *)&state->addr, state->addrlen);
+    printf("Client was correct! (%d)\n", client_result);
+  }
+  else
+  {
+    const char*errmsg = "ERROR\n";
+    sendto(sockfd, errmsg, strlen(errmsg), 0, (struct sockaddr *)&state->addr, state->addrlen);
+    printf("Client was wrong! Expected %d but got %d\n", state->correct_result, client_result);
+  }
+
+  pending_clients.erase(found_key);
+}
+
+void send_binary_assignment(int sockfd, struct sockaddr_storage *client_addr, socklen_t addrlen) {
+  initCalcLib();
+  char *operation = randomType();
+  int value1 = randomInt();
+  int value2 = randomInt();
+
+  calcProtocol msg;
+  memset(&msg, 0, sizeof(msg));
+  msg.type = htons(1);
+  msg.major_version = htons(1);
+  msg.minor_version = htons(1);
+  uint32_t id = rand();
+  msg.id = htonl(id); 
+
+  if (strcmp(operation, "add") == 0) 
+    msg.arith = htonl(1);
+  else if (strcmp(operation, "sub") == 0) 
+    msg.arith = htonl(2);
+  else if (strcmp(operation, "mul") == 0) 
+    msg.arith = htonl(3);
+  else if (strcmp(operation, "div") == 0) 
+    msg.arith = htonl(4);
+  msg.inValue1 = htonl(value1);
+  msg.inValue2 = htonl(value2);
+
+  printf("Sent assignment (BINARY): %s %d %d\n", operation, value1, value2);
+  sendto(sockfd, &msg, sizeof(msg), 0, (struct sockaddr *)client_addr, addrlen);
+  
+  ClientState state;
+  memcpy(&state.addr, client_addr, sizeof(*client_addr));
+  state.addrlen = addrlen;
+  state.sent_time = time(NULL);
+  strncpy(state.operation, operation, sizeof(state.operation));
+  state.value1 = value1;
+  state.value2 = value2;
+  state.id = id;
+  state.is_binary = true;
+
+  int correct_result;
+  if (strcmp(operation, "add") == 0) 
+    correct_result = value1 + value2;
+  else if (strcmp(operation, "sub") == 0) 
+    correct_result = value1 - value2;
+  else if (strcmp(operation, "mul") == 0) 
+    correct_result = value1 * value2;
+  else if (strcmp(operation, "div") == 0) 
+    correct_result = value1 / value2;
+  else 
+    correct_result = 0;
+
+  state.correct_result = correct_result;
+  pending_clients[id] = state;
+}
+
+void handle_binary_answer(int sockfd, calcProtocol *ans, struct sockaddr_storage * from_addr, socklen_t addrlen)
+{
+  uint32_t id = ntohl(ans->id);
+  int client_result = ntohl(ans->inResult);
+
+  printf("Binary answer received: %d (ID: %u)\n", client_result, id);
+
+  auto it = pending_clients.find(id);
+  if (it == pending_clients.end())
+  {
+    fprintf(stderr, "received answer from unown client ID: %u\n", id);
+    return;
+  }
+
+  ClientState &state = it->second;
+
+  calcMessage response;
+  memset(&response, 0, sizeof(response));
+  response.type = htons(2);
+  response.major_version = htons(1);
+  response.minor_version = htons(1);
+  response.message = htonl(client_result == state.correct_result ? 1 : 2);
+  sendto(sockfd, &response, sizeof(response), 0, (struct sockaddr *)&state.addr, state.addrlen);
+
+  if (client_result == state.correct_result)
+    printf("Client was correct! (%d)\n", client_result);
+  else
+    printf("Client was wrong! Expected %d but got %d\n", state.correct_result, client_result);
+  pending_clients.erase(it);
+}
+void cleanup_clients() {
+  time_t now = time(NULL);
+  auto it = pending_clients.begin();
+  while (it != pending_clients.end()) {
+    if (now - it->second.sent_time > 5) {
+      printf("Removing stale client (ID: %u)\n", it->first);
+      it = pending_clients.erase(it);
     } else {
-      const char *errmsg = "ERROR\n";
-      sendto(sockfd, errmsg, strlen(errmsg), 0, (struct sockaddr *)client_addr, addrlen);
-      printf("Client was wrong! Expected %d but got %d\n", correct_result, client_result);
+      ++it;
     }
+  }
 }
 
-void handle_binary_client(int sockfd, struct sockaddr_storage *client_addr, socklen_t addrlen) {
-    initCalcLib();
-    char *operation = randomType();
-    int value1 = randomInt();
-    int value2 = randomInt();
-
-    calcProtocol msg;
-    memset(&msg, 0, sizeof(msg));
-    msg.type = htons(1);
-    msg.major_version = htons(1);
-    msg.minor_version = htons(1);
-    msg.id = htonl(rand());
-
-    if (strcmp(operation, "add") == 0) 
-      msg.arith = htonl(1);
-    else if (strcmp(operation, "sub") == 0) 
-      msg.arith = htonl(2);
-    else if (strcmp(operation, "mul") == 0) 
-      msg.arith = htonl(3);
-    else if (strcmp(operation, "div") == 0) 
-      msg.arith = htonl(4);
-    msg.inValue1 = htonl(value1);
-    msg.inValue2 = htonl(value2);
-
-    printf("Sent assignment (BINARY): %s %d %d\n", operation, value1, value2);
-    sendto(sockfd, &msg, sizeof(msg), 0, (struct sockaddr *)client_addr, addrlen);
-
-    fd_set readfds;
-    FD_ZERO(&readfds);
-    FD_SET(sockfd, &readfds);
-    
-    struct timeval timeout;
-    timeout.tv_sec = 2;
-    timeout.tv_usec = 0;
-
-    int activity = select(sockfd + 1, &readfds, NULL, NULL, &timeout);
-    if (activity <= 0) {
-      fprintf(stderr, "binary recv failed (timeout)\n");
-      return;
-    }
-    
-    calcProtocol ans;
-    struct sockaddr_storage response_addr;
-    socklen_t response_addrlen = sizeof(response_addr);
-
-    int n = recvfrom(sockfd, &ans, sizeof(ans), 0, (struct sockaddr *)client_addr, &addrlen);
-    if (n < sizeof(ans)) {
-      fprintf(stderr, "binary recv failed\n");
-      return;
-    }
-
-    int client_result = ntohl(ans.inResult);
-    printf("Received answer (BINARY): %d\n", client_result);
-
-    int correct_result;
-    if (strcmp(operation, "add") == 0) 
-      correct_result = value1 + value2;
-    else if (strcmp(operation, "sub") == 0) 
-      correct_result = value1 - value2;
-    else if (strcmp(operation, "mul") == 0) 
-      correct_result = value1 * value2;
-    else if (strcmp(operation, "div") == 0) 
-      correct_result = value1 / value2;
-    else 
-      correct_result = 0;
-
-    printf("Expected result: %d\n", correct_result);
-
-    calcMessage response;
-    memset(&response, 0, sizeof(response));
-    response.type = htons(2);
-    response.major_version = htons(1);
-    response.minor_version = htons(1);
-    response.message = htonl(client_result == correct_result ? 1 : 2);
-
-    sendto(sockfd, &response, sizeof(response), 0, (struct sockaddr *)client_addr, addrlen);
-
-    if (client_result == correct_result)
-      printf("Client was correct! (%d)\n", client_result);  
-    else
-      printf("Client was wrong! Expected %d but got %d\n", correct_result, client_result);
-}
 
 int main(int argc, char *argv[]){
   if (argc < 2) {
@@ -234,16 +296,33 @@ int main(int argc, char *argv[]){
     FD_SET(sockfd, &readfds);
 
     struct timeval timeout;
-    timeout.tv_sec = 10;
+    timeout.tv_sec = 1;
     timeout.tv_usec = 0;
 
-    int n = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&client_addr, &addrlen);
-    if (n < 0) {
-      perror("recvfrom");
+    int activity = select(sockfd + 1, &readfds, NULL, NULL, &timeout);
+
+    if (activity < 0) {
+      perror("select");
       continue;
     }
 
-    if (n == sizeof(calcMessage)) {
+    if (activity == 0) {
+      cleanup_clients();
+      continue;
+    }
+
+    if (FD_ISSET(sockfd, &readfds)) {
+      addrlen = sizeof(client_addr);
+      int n = recvfrom(sockfd, buffer, sizeof(buffer), 0,
+                        (struct sockaddr *)&client_addr, &addrlen);
+      if (n < 0) {
+        perror("recvfrom");
+        continue;
+      }
+
+
+    if (n == sizeof(calcMessage)) 
+    {
       calcMessage msg;
       memcpy(&msg, buffer, sizeof(msg));
 
@@ -253,36 +332,44 @@ int main(int argc, char *argv[]){
       msg.major_version = ntohs(msg.major_version);
       msg.minor_version = ntohs(msg.minor_version);
 
-      if (msg.type != 22) {
-        fprintf(stderr, "Unexpected message type: %d\n", msg.type);
-        continue;
-      }
-
-      if (msg.protocol != 17) {
+      if (msg.type == 22) {
+        if (msg.protocol != 17) {
         fprintf(stderr, "Invalid protocol: %d\n", msg.protocol);
         continue;
+        }
+        send_binary_assignment(sockfd, &client_addr, addrlen);
       }
-
-      if (msg.major_version != 1 || msg.minor_version != 1) {
-        fprintf(stderr, "Unexpected protocol version: %d.%d\n", msg.major_version, msg.minor_version);
-        continue;
+      else
+      {
+        fprintf(stderr, "Unexpected message type: %d\n", msg.type);
       }
-      
-      handle_binary_client(sockfd, &client_addr, addrlen);
     }
+
+    //binary answer
+    else if (n == sizeof(calcProtocol))
+    {
+      calcProtocol ans;
+      memcpy(&ans, buffer, sizeof(ans));
+      handle_binary_answer(sockfd, &ans, &client_addr, addrlen);
+    }
+
     // Text protocol
-    else {
+    else 
+    {
       buffer[n] = '\0';
       printf("Text packet received: %s\n", buffer);
 
-      if (strncmp(buffer, "TEXT", 4) == 0) {
-        handle_text_client(sockfd, &client_addr, addrlen);
-      } else {
-        fprintf(stderr, "Unknown text format\n");
+      if (strncmp(buffer, "TEXT", 4) == 0) 
+      {
+        send_text_assignment(sockfd, &client_addr, addrlen);
+      } 
+      else 
+      {
+        handle_text_answer(sockfd, buffer, n, &client_addr, addrlen);
       }
     }
   }
-
+  }
   close(sockfd);
   return 0;
 }
