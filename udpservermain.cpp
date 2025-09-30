@@ -46,8 +46,8 @@ void send_text_assignment(int sockfd, struct sockaddr_storage *client_addr, sock
 
   initCalcLib();
   char *operation = randomType();
-  int value1 = randomInt();
-  int value2 = randomInt();
+  int value1 = randomInt() ;
+  int value2 = randomInt() ;
 
   int correct_result;
 
@@ -58,7 +58,10 @@ void send_text_assignment(int sockfd, struct sockaddr_storage *client_addr, sock
   else if (strcmp(operation, "mul") == 0) 
     correct_result = value1 * value2;
   else if (strcmp(operation, "div") == 0) 
+  {
+    if (value2 == 0) value2 = 1;
     correct_result = value1 / value2;
+  }
   else 
     correct_result = 0;
 
@@ -138,8 +141,11 @@ void send_binary_assignment(int sockfd, struct sockaddr_storage *client_addr, so
   msg.type = htons(1);
   msg.major_version = htons(1);
   msg.minor_version = htons(1);
-  uint32_t id = rand();
-  msg.id = htonl(id); 
+  uint32_t id;
+  do {
+      id = rand();
+  } while (pending_clients.find(id) != pending_clients.end());
+  msg.id = htonl(id);
 
   if (strcmp(operation, "add") == 0) 
     msg.arith = htonl(1);
@@ -173,7 +179,10 @@ void send_binary_assignment(int sockfd, struct sockaddr_storage *client_addr, so
   else if (strcmp(operation, "mul") == 0) 
     correct_result = value1 * value2;
   else if (strcmp(operation, "div") == 0) 
+  {
+    if (value2 == 0) value2 = 1;
     correct_result = value1 / value2;
+  }
   else 
     correct_result = 0;
 
