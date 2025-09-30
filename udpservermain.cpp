@@ -83,22 +83,24 @@ void send_text_assignment(int sockfd, struct sockaddr_storage *client_addr, sock
   pending_clients[key] = state;
 }
 
-void handle_text_answer(int sockfd, char *buffer, int n, struct sockaddr_storage *from_addr, socklen_t addrlen)
+void handle_text_answer(int sockfd, char *buffer, int n,
+  struct sockaddr_storage *from_addr, socklen_t addrlen)
 {
   buffer[n] = '\0';
-  printf("text answer recieved: %s\n", buffer);
+  printf("Text answer received: %s\n", buffer);
 
   if (pending_clients.empty())
   {
-    fprintf(stderr, "got answer but no pending clients\n");
-    return;
+      fprintf(stderr, "Got answer but no pending clients\n");
+      return;
   }
 
   ClientState *state = NULL;
   uint32_t found_key = 0;
-  for (auto &pair: pending_clients) 
+
+  for (auto &pair : pending_clients)
   {
-    if(!pair.second.is_binary)
+    if (!pair.second.is_binary)
     {
       state = &pair.second;
       found_key = pair.first;
@@ -106,9 +108,9 @@ void handle_text_answer(int sockfd, char *buffer, int n, struct sockaddr_storage
     }
   }
 
-  if(!state)
+  if (!state)
   {
-    fprintf(stderr, "No pending text clients fonud\n");
+    fprintf(stderr, "No pending TEXT clients found\n");
     return;
   }
 
@@ -117,18 +119,22 @@ void handle_text_answer(int sockfd, char *buffer, int n, struct sockaddr_storage
   if (client_result == state->correct_result)
   {
     const char *okmsg = "OK\n";
-    sendto(sockfd, okmsg, strlen(okmsg), 0, (struct sockaddr *)&state->addr, state->addrlen);
+    sendto(sockfd, okmsg, strlen(okmsg), 0,
+      (struct sockaddr *)&state->addr, state->addrlen);
     printf("Client was correct! (%d)\n", client_result);
   }
   else
   {
-    const char*errmsg = "ERROR\n";
-    sendto(sockfd, errmsg, strlen(errmsg), 0, (struct sockaddr *)&state->addr, state->addrlen);
-    printf("Client was wrong! Expected %d but got %d\n", state->correct_result, client_result);
+    const char *errmsg = "ERROR\n";
+    sendto(sockfd, errmsg, strlen(errmsg), 0,
+      (struct sockaddr *)&state->addr, state->addrlen);
+    printf("Client was wrong! Expected %d but got %d\n",
+      state->correct_result, client_result);
   }
 
   pending_clients.erase(found_key);
 }
+
 
 void send_binary_assignment(int sockfd, struct sockaddr_storage *client_addr, socklen_t addrlen) {
   initCalcLib();
