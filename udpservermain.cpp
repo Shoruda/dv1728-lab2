@@ -46,6 +46,20 @@ void handle_text_client(int sockfd, struct sockaddr_storage *client_addr, sockle
     sendto(sockfd, buffer, strlen(buffer), 0, (struct sockaddr *)client_addr, addrlen);
     printf("Sent assignment (TEXT): %s %d %d\n", operation, value1, value2);
 
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(sockfd, &readfds);
+    
+    struct timeval timeout;
+    timeout.tv_sec = 2;  // 2 second timeout for client response
+    timeout.tv_usec = 0;
+
+    int activity = select(sockfd + 1, &readfds, NULL, NULL, &timeout);
+    if (activity <= 0) {
+      fprintf(stderr, "Client did not respond in time (TEXT)\n");
+      return;
+    }
+
     int n = recvfrom(sockfd, buffer, sizeof(buffer)-1, 0, (struct sockaddr *)client_addr, &addrlen);
     if (n < 0) {
       perror("recvfrom");
@@ -93,7 +107,24 @@ void handle_binary_client(int sockfd, struct sockaddr_storage *client_addr, sock
     printf("Sent assignment (BINARY): %s %d %d\n", operation, value1, value2);
     sendto(sockfd, &msg, sizeof(msg), 0, (struct sockaddr *)client_addr, addrlen);
 
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(sockfd, &readfds);
+    
+    struct timeval timeout;
+    timeout.tv_sec = 2;
+    timeout.tv_usec = 0;
+
+    int activity = select(sockfd + 1, &readfds, NULL, NULL, &timeout);
+    if (activity <= 0) {
+      fprintf(stderr, "binary recv failed (timeout)\n");
+      return;
+    }
+    
     calcProtocol ans;
+    struct sockaddr_storage response_addr;
+    socklen_t response_addrlen = sizeof(response_addr);
+
     int n = recvfrom(sockfd, &ans, sizeof(ans), 0, (struct sockaddr *)client_addr, &addrlen);
     if (n < sizeof(ans)) {
       fprintf(stderr, "binary recv failed\n");
@@ -127,7 +158,7 @@ void handle_binary_client(int sockfd, struct sockaddr_storage *client_addr, sock
     sendto(sockfd, &response, sizeof(response), 0, (struct sockaddr *)client_addr, addrlen);
 
     if (client_result == correct_result)
-      printf("Client was correct! (%d)\n", client_result);
+      printf("Client was correct! (%d)\n", client_result);  
     else
       printf("Client was wrong! Expected %d but got %d\n", correct_result, client_result);
 }
@@ -197,6 +228,7 @@ int main(int argc, char *argv[]){
   socklen_t addrlen = sizeof(client_addr);
 
   printf("Server ready, waiting for UDP packets...\n");
+
   while (1) {
     FD_ZERO(&readfds);
     FD_SET(sockfd, &readfds);
@@ -205,38 +237,22 @@ int main(int argc, char *argv[]){
     timeout.tv_sec = 10;
     timeout.tv_usec = 0;
 
-    int activity = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
-
-    if (activity < 0) {
-      perror("select");
+    int n = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&client_addr, &addrlen);
+    if (n < 0) {
+      perror("recvfrom");
       continue;
     }
 
-    if (activity == 0) {
-      printf("No activity, waiting\n");
-      continue;
-    }
+    if (n == sizeof(calcMessage)) {
+      calcMessage msg;
+      memcpy(&msg, buffer, sizeof(msg));
 
-    if (FD_ISSET(sockfd, &readfds)) {
-      int n = recvfrom(sockfd, buffer, sizeof(buffer), 0,
-                        (struct sockaddr *)&client_addr, &addrlen);
-      if (n < 0) {
-          perror("recvfrom");
-          continue;
-      }
+      msg.type          = ntohs(msg.type);
+      msg.message       = ntohl(msg.message);
+      msg.protocol      = ntohs(msg.protocol);
+      msg.major_version = ntohs(msg.major_version);
+      msg.minor_version = ntohs(msg.minor_version);
 
-      printf("Received %d bytes: %s\n", n, buffer);
-      // binary
-      if (n == sizeof(calcMessage)) {
-        calcMessage msg;
-        memcpy(&msg, buffer, sizeof(msg));
-
-        msg.type          = ntohs(msg.type);
-        msg.message       = ntohl(msg.message);
-        msg.protocol      = ntohs(msg.protocol);
-        msg.major_version = ntohs(msg.major_version);
-        msg.minor_version = ntohs(msg.minor_version);
- 
       if (msg.type != 22) {
         fprintf(stderr, "Unexpected message type: %d\n", msg.type);
         continue;
@@ -251,23 +267,22 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Unexpected protocol version: %d.%d\n", msg.major_version, msg.minor_version);
         continue;
       }
+      
       handle_binary_client(sockfd, &client_addr, addrlen);
+    }
+    // Text protocol
+    else {
+      buffer[n] = '\0';
+      printf("Text packet received: %s\n", buffer);
 
+      if (strncmp(buffer, "TEXT", 4) == 0) {
+        handle_text_client(sockfd, &client_addr, addrlen);
+      } else {
+        fprintf(stderr, "Unknown text format\n");
       }
-      // text
-      else {
-        buffer[n] = '\0';
-        printf("Text packet received: %s\n", buffer);
+    }
+  }
 
-        if (strncmp(buffer, "TEXT", 4) == 0) {
-            handle_text_client(sockfd, &client_addr, addrlen);
-        } else {
-            fprintf(stderr, "Unknown text format\n");
-        }
-      }
-        }
-      }
-
-close(sockfd);
-return 0;
+  close(sockfd);
+  return 0;
 }

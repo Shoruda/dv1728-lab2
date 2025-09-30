@@ -6,7 +6,7 @@ make all -f /home/axel/dv1728-lab2/Makefile --print-data-base --no-builtin-varia
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Tue Sep 30 10:53:56 2025
+# Make data base, printed on Tue Sep 30 14:04:51 2025
 
 # Variables
 
@@ -15,13 +15,9 @@ GDK_BACKEND = x11
 # environment
 LC_ALL = C
 # environment
-NO_AT_BRIDGE = 1
-# environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
 SSH_AGENT_LAUNCHER = gnome-keyring
-# environment
-GJS_DEBUG_OUTPUT = stderr
 # environment
 LC_NAME = sv_SE.UTF-8
 # environment
@@ -93,7 +89,7 @@ MAKEFILE_LIST := /home/axel/dv1728-lab2/Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 4649
+VSCODE_PID = 33195
 # environment
 XDG_SESSION_TYPE = wayland
 # automatic
@@ -120,8 +116,6 @@ SHELL = /bin/sh
 MAKECMDGOALS := all
 # environment
 XMODIFIERS = @im=ibus
-# environment
-GJS_DEBUG_TOPICS = JS ERROR;JS LOG
 # environment
 SHLVL = 0
 # environment
@@ -185,9 +179,9 @@ DBUS_STARTER_BUS_TYPE = session
 # environment
 LC_MEASUREMENT = sv_SE.UTF-8
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 5357
+GIO_LAUNCHED_DESKTOP_FILE_PID = 33195
 # environment
-_ = /usr/bin/gnome-session
+_ = /usr/share/code/code
 # environment
 LC_PAPER = sv_SE.UTF-8
 # environment
@@ -227,7 +221,7 @@ LC_IDENTIFICATION = sv_SE.UTF-8
 # makefile (from '/home/axel/dv1728-lab2/Makefile', line 1)
 CC_FLAGS = -Wall -I.
 # variable set hash-table stats:
-# Load=108/1024=11%, Rehash=0, Collisions=4/141=3%
+# Load=105/1024=10%, Rehash=0, Collisions=4/138=3%
 
 # Pattern-specific Variable Values
 
@@ -285,6 +279,7 @@ libcalc: calcLib.o
 #  File does not exist.
 #  File has been updated.
 #  Needs to be updated (-q is set).
+ 
 # automatic
 # @ := libcalc
 # automatic
@@ -297,7 +292,6 @@ libcalc: calcLib.o
 # % := 
 # automatic
 # ^ := calcLib.o
- 
 # automatic
 # ? := calcLib.o
 # automatic
@@ -316,7 +310,7 @@ calcLib.c:
 
 calcLib.o: calcLib.c calcLib.h
 #  Implicit rule search has not been done.
-#  Last modified 2025-09-26 15:55:50.251738723
+#  Last modified 2025-09-30 13:50:19.115750338
 #  File has been updated.
 #  Successfully updated.
 #  recipe to execute (from '/home/axel/dv1728-lab2/Makefile', line 28):
@@ -403,6 +397,6 @@ tcpservermain.o: tcpservermain.cpp
 # strcache performance: lookups = 46 / hit rate = 56%
 # hash-table stats:
 # Load=20/8192=0%, Rehash=0, Collisions=0/46=0%
-# Finished Make data base on Tue Sep 30 10:53:56 2025
+# Finished Make data base on Tue Sep 30 14:04:51 2025
 
  
