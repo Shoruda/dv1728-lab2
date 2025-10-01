@@ -10,7 +10,7 @@
 // Included to get the support library
 #include <calcLib.h>
 #include <errno.h>
-
+#include <signal.h>
 #include "calcLib.h"
 #include "protocol.h"
 // Enable if you want debugging to be printed, see examble below.
@@ -206,6 +206,8 @@ int main(int argc, char *argv[]){
     }
 
     printf("Server is listening...\n");
+
+    signal(SIGCHLD, SIG_IGN);
 
     while (1) {
         struct sockaddr_storage cli_addr;
