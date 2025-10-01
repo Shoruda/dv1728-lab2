@@ -20,7 +20,6 @@
 // Alternative, pass CFLAGS=-DDEBUG to make, make CFLAGS=-DDEBUG
 #define DEBUG
 
-
 using namespace std;
 
 struct ClientState {
@@ -44,7 +43,6 @@ uint32_t generate_client_key(struct sockaddr_storage *addr) {
 void send_text_assignment(int sockfd, struct sockaddr_storage *client_addr, socklen_t addrlen) {
   char buffer[256];
 
-  initCalcLib();
   char *operation = randomType();
   int value1 = randomInt() ;
   int value2 = randomInt() ;
@@ -95,6 +93,8 @@ void handle_text_answer(int sockfd, char *buffer, int n,
       return;
   }
 
+  int client_result = atoi(buffer);
+  
   ClientState *state = NULL;
   uint32_t found_key = 0;
 
@@ -102,35 +102,78 @@ void handle_text_answer(int sockfd, char *buffer, int n,
   {
     if (!pair.second.is_binary)
     {
-      if (pair.second.addr.ss_family == from_addr->ss_family)
+      if (pair.second.correct_result == client_result)
       {
-        bool match = false;
-        if (from_addr->ss_family == AF_INET)
+        if (pair.second.addr.ss_family == from_addr->ss_family)
         {
-          struct sockaddr_in *a1 = (struct sockaddr_in *)&pair.second.addr;
-          struct sockaddr_in *a2 = (struct sockaddr_in *)from_addr;
-          if (a1->sin_addr.s_addr == a2->sin_addr.s_addr &&
-              a1->sin_port == a2->sin_port)
+          bool match = false;
+          if (from_addr->ss_family == AF_INET)
           {
-            match = true;
+            struct sockaddr_in *a1 = (struct sockaddr_in *)&pair.second.addr;
+            struct sockaddr_in *a2 = (struct sockaddr_in *)from_addr;
+            if (a1->sin_addr.s_addr == a2->sin_addr.s_addr &&
+                a1->sin_port == a2->sin_port)
+            {
+              match = true;
+            }
+          }
+          else if (from_addr->ss_family == AF_INET6)
+          {
+            struct sockaddr_in6 *a1 = (struct sockaddr_in6 *)&pair.second.addr;
+            struct sockaddr_in6 *a2 = (struct sockaddr_in6 *)from_addr;
+            if (memcmp(&a1->sin6_addr, &a2->sin6_addr, sizeof(struct in6_addr)) == 0 &&
+                a1->sin6_port == a2->sin6_port)
+            {
+              match = true;
+            }
+          }
+          
+          if (match)
+          {
+            state = &pair.second;
+            found_key = pair.first;
+            break;
           }
         }
-        else if (from_addr->ss_family == AF_INET6)
+      }
+    }
+  }
+  if (!state)
+  {
+    for (auto &pair : pending_clients)
+    {
+      if (!pair.second.is_binary)
+      {
+        if (pair.second.addr.ss_family == from_addr->ss_family)
         {
-          struct sockaddr_in6 *a1 = (struct sockaddr_in6 *)&pair.second.addr;
-          struct sockaddr_in6 *a2 = (struct sockaddr_in6 *)from_addr;
-          if (memcmp(&a1->sin6_addr, &a2->sin6_addr, sizeof(struct in6_addr)) == 0 &&
-              a1->sin6_port == a2->sin6_port)
+          bool match = false;
+          if (from_addr->ss_family == AF_INET)
           {
-            match = true;
+            struct sockaddr_in *a1 = (struct sockaddr_in *)&pair.second.addr;
+            struct sockaddr_in *a2 = (struct sockaddr_in *)from_addr;
+            if (a1->sin_addr.s_addr == a2->sin_addr.s_addr &&
+                a1->sin_port == a2->sin_port)
+            {
+              match = true;
+            }
           }
-        }
-        
-        if (match)
-        {
-          state = &pair.second;
-          found_key = pair.first;
-          break;
+          else if (from_addr->ss_family == AF_INET6)
+          {
+            struct sockaddr_in6 *a1 = (struct sockaddr_in6 *)&pair.second.addr;
+            struct sockaddr_in6 *a2 = (struct sockaddr_in6 *)from_addr;
+            if (memcmp(&a1->sin6_addr, &a2->sin6_addr, sizeof(struct in6_addr)) == 0 &&
+                a1->sin6_port == a2->sin6_port)
+            {
+              match = true;
+            }
+          }
+          
+          if (match)
+          {
+            state = &pair.second;
+            found_key = pair.first;
+            break;
+          }
         }
       }
     }
@@ -141,8 +184,6 @@ void handle_text_answer(int sockfd, char *buffer, int n,
     fprintf(stderr, "No pending TEXT clients found for this address\n");
     return;
   }
-
-  int client_result = atoi(buffer);
 
   if (client_result == state->correct_result)
   {
@@ -165,7 +206,6 @@ void handle_text_answer(int sockfd, char *buffer, int n,
 
 
 void send_binary_assignment(int sockfd, struct sockaddr_storage *client_addr, socklen_t addrlen) {
-  initCalcLib();
   char *operation = randomType();
   int value1 = randomInt();
   int value2 = randomInt();
@@ -326,6 +366,9 @@ int main(int argc, char *argv[]){
     exit(1);
   }
   freeaddrinfo(res);
+
+  initCalcLib();
+  srand(time(NULL));
 
   fd_set readfds;
   char buffer[256];
