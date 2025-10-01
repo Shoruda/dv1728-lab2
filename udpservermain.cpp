@@ -102,15 +102,43 @@ void handle_text_answer(int sockfd, char *buffer, int n,
   {
     if (!pair.second.is_binary)
     {
-      state = &pair.second;
-      found_key = pair.first;
-      break;
+      if (pair.second.addr.ss_family == from_addr->ss_family)
+      {
+        bool match = false;
+        if (from_addr->ss_family == AF_INET)
+        {
+          struct sockaddr_in *a1 = (struct sockaddr_in *)&pair.second.addr;
+          struct sockaddr_in *a2 = (struct sockaddr_in *)from_addr;
+          if (a1->sin_addr.s_addr == a2->sin_addr.s_addr &&
+              a1->sin_port == a2->sin_port)
+          {
+            match = true;
+          }
+        }
+        else if (from_addr->ss_family == AF_INET6)
+        {
+          struct sockaddr_in6 *a1 = (struct sockaddr_in6 *)&pair.second.addr;
+          struct sockaddr_in6 *a2 = (struct sockaddr_in6 *)from_addr;
+          if (memcmp(&a1->sin6_addr, &a2->sin6_addr, sizeof(struct in6_addr)) == 0 &&
+              a1->sin6_port == a2->sin6_port)
+          {
+            match = true;
+          }
+        }
+        
+        if (match)
+        {
+          state = &pair.second;
+          found_key = pair.first;
+          break;
+        }
+      }
     }
   }
 
   if (!state)
   {
-    fprintf(stderr, "No pending TEXT clients found\n");
+    fprintf(stderr, "No pending TEXT clients found for this address\n");
     return;
   }
 
