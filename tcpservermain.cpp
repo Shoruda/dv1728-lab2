@@ -24,7 +24,6 @@ using namespace std;
 void handle_text_client(int sock)
 {
     char newbuffer[256];
-    initCalcLib();
     char* operation = randomType();
     int value1 = randomInt();
     int value2 = randomInt();
@@ -71,7 +70,6 @@ void handle_text_client(int sock)
 
 void handle_binary_client(int sock)
 {
-    initCalcLib();
     char* operation = randomType();
     int value1 = randomInt();
     int value2 = randomInt();
@@ -181,7 +179,8 @@ int main(int argc, char *argv[]){
     }
 
     int sockfd;
-    for (p = res; p != NULL; p = p->ai_next) {
+    for (p = res; p != NULL; p = p->ai_next) 
+    {
         sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (sockfd == -1) continue;
 
@@ -199,6 +198,7 @@ int main(int argc, char *argv[]){
     }
 
     freeaddrinfo(res);
+    initCalcLib();
 
     if (listen(sockfd, BACKLOG) == -1) {
         fprintf(stderr, "listen error: %s\n", strerror(errno));
@@ -209,7 +209,8 @@ int main(int argc, char *argv[]){
 
     signal(SIGCHLD, SIG_IGN);
 
-    while (1) {
+    while (1) 
+    {
         struct sockaddr_storage cli_addr;
         socklen_t clilen = sizeof(cli_addr);
 
@@ -225,13 +226,15 @@ int main(int argc, char *argv[]){
         setsockopt(newsock, SOL_SOCKET, SO_RCVTIMEO, &time, sizeof(time));
 
         pid_t pid = fork();
-        if (pid < 0) {
+        if (pid < 0) 
+        {
             fprintf(stderr, "fork error: %s\n", strerror(errno));
             close(newsock);
             continue;
         }
 
-        if (pid == 0) {
+        if (pid == 0) 
+        {
             close(sockfd);
 
             printf("Client connected!\n");

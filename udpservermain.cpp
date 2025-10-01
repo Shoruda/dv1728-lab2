@@ -23,15 +23,15 @@
 using namespace std;
 
 struct ClientState {
-    struct sockaddr_storage addr;
-    socklen_t addrlen;
-    time_t sent_time;
-    int correct_result;
-    char operation[10];
-    int value1;
-    int value2;
-    uint32_t id;
-    bool is_binary;
+  struct sockaddr_storage addr;
+  socklen_t addrlen;
+  time_t sent_time;
+  int correct_result;
+  char operation[10];
+  int value1;
+  int value2;
+  uint32_t id;
+  bool is_binary;
 };
 
 std::map<uint32_t, ClientState> pending_clients;
@@ -89,8 +89,8 @@ void handle_text_answer(int sockfd, char *buffer, int n,
 
   if (pending_clients.empty())
   {
-      fprintf(stderr, "Got answer but no pending clients\n");
-      return;
+    fprintf(stderr, "Got answer but no pending clients\n");
+    return;
   }
 
   int client_result = atoi(buffer);
@@ -112,7 +112,7 @@ void handle_text_answer(int sockfd, char *buffer, int n,
             struct sockaddr_in *a1 = (struct sockaddr_in *)&pair.second.addr;
             struct sockaddr_in *a2 = (struct sockaddr_in *)from_addr;
             if (a1->sin_addr.s_addr == a2->sin_addr.s_addr &&
-                a1->sin_port == a2->sin_port)
+              a1->sin_port == a2->sin_port)
             {
               match = true;
             }
@@ -122,7 +122,7 @@ void handle_text_answer(int sockfd, char *buffer, int n,
             struct sockaddr_in6 *a1 = (struct sockaddr_in6 *)&pair.second.addr;
             struct sockaddr_in6 *a2 = (struct sockaddr_in6 *)from_addr;
             if (memcmp(&a1->sin6_addr, &a2->sin6_addr, sizeof(struct in6_addr)) == 0 &&
-                a1->sin6_port == a2->sin6_port)
+              a1->sin6_port == a2->sin6_port)
             {
               match = true;
             }
@@ -152,7 +152,7 @@ void handle_text_answer(int sockfd, char *buffer, int n,
             struct sockaddr_in *a1 = (struct sockaddr_in *)&pair.second.addr;
             struct sockaddr_in *a2 = (struct sockaddr_in *)from_addr;
             if (a1->sin_addr.s_addr == a2->sin_addr.s_addr &&
-                a1->sin_port == a2->sin_port)
+              a1->sin_port == a2->sin_port)
             {
               match = true;
             }
@@ -162,7 +162,7 @@ void handle_text_answer(int sockfd, char *buffer, int n,
             struct sockaddr_in6 *a1 = (struct sockaddr_in6 *)&pair.second.addr;
             struct sockaddr_in6 *a2 = (struct sockaddr_in6 *)from_addr;
             if (memcmp(&a1->sin6_addr, &a2->sin6_addr, sizeof(struct in6_addr)) == 0 &&
-                a1->sin6_port == a2->sin6_port)
+              a1->sin6_port == a2->sin6_port)
             {
               match = true;
             }
@@ -217,7 +217,7 @@ void send_binary_assignment(int sockfd, struct sockaddr_storage *client_addr, so
   msg.minor_version = htons(1);
   uint32_t id;
   do {
-      id = rand();
+    id = rand();
   } while (pending_clients.find(id) != pending_clients.end());
   msg.id = htonl(id);
 
@@ -294,14 +294,18 @@ void handle_binary_answer(int sockfd, calcProtocol *ans, struct sockaddr_storage
     printf("Client was wrong! Expected %d but got %d\n", state.correct_result, client_result);
   pending_clients.erase(it);
 }
-void cleanup_clients() {
+void cleanup_clients() 
+{
   time_t now = time(NULL);
   auto it = pending_clients.begin();
-  while (it != pending_clients.end()) {
+  while (it != pending_clients.end()) 
+  {
     if (now - it->second.sent_time > 5) {
       printf("Removing stale client (ID: %u)\n", it->first);
       it = pending_clients.erase(it);
-    } else {
+    } 
+    else 
+    {
       ++it;
     }
   }
@@ -309,7 +313,8 @@ void cleanup_clients() {
 
 
 int main(int argc, char *argv[]){
-  if (argc < 2) {
+  if (argc < 2) 
+  {
     fprintf(stderr, "Usage: %s protocol://server:port/path.\n", argv[0]);
     exit(EXIT_FAILURE);
   }
@@ -377,7 +382,8 @@ int main(int argc, char *argv[]){
 
   printf("Server ready, waiting for UDP packets...\n");
 
-  while (1) {
+  while (1) 
+  {
     FD_ZERO(&readfds);
     FD_SET(sockfd, &readfds);
 
@@ -406,7 +412,7 @@ int main(int argc, char *argv[]){
         continue;
       }
 
-
+    //binary
     if (n == sizeof(calcMessage)) 
     {
       calcMessage msg;
@@ -418,8 +424,10 @@ int main(int argc, char *argv[]){
       msg.major_version = ntohs(msg.major_version);
       msg.minor_version = ntohs(msg.minor_version);
 
-      if (msg.type == 22) {
-        if (msg.protocol != 17) {
+      if (msg.type == 22) 
+      {
+        if (msg.protocol != 17) 
+        {
         fprintf(stderr, "Invalid protocol: %d\n", msg.protocol);
         continue;
         }
